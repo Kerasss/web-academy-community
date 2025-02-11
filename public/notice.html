@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>공지사항</title>
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /* ------------------------------
+      전체 레이아웃 + 스타일 (수정)
+    ------------------------------ */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f7fa;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* 공지 목록, 모달 등은 기존과 동일 */
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #002147;
+      border-bottom: 2px solid #002147;
+      padding-bottom: 10px;
+    }
+    button {
+      background-color: #002147;
+      border: none;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #003f8f;
+    }
+
+    /* 공지 목록 스타일 */
+    .notice-list {
+      min-height: 600px; 
+      margin-bottom: 20px; 
+    }
+    .notice-item {
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .notice-item:hover {
+      background-color: #f1f1f1;
+    }
+    .notice-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .notice-meta {
+      font-size: 12px;
+      color: #777;
+      margin-top: 5px;
+    }
+    .trash-icon {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      width: 20px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .trash-icon:hover {
+      opacity: 0.7;
+    }
+    /* 수정 아이콘 */
+    .edit-icon {
+      position: absolute;
+      top: 50%;
+      right: 45px; 
+      width: 20px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .edit-icon:hover {
+      opacity: 0.7;
+    }
+
+    .notice-empty {
+      text-align: center;  
+      margin-top: 60px;   
+      font-size: 16px;
+      color: #555;        
+    }
+
+    .pagination {
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: 45px;
+    }
+    .pagination button {
+      margin: 0 5px;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+      padding: 0;
+    }
+    .pagination .active {
+      background-color: #ffeb3b;
+      color: #333;
+    }
+
+    /* 모달(overlay) */
+    .overlay {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%; 
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none; 
+      align-items: center; 
+      justify-content: center;
+      z-index: 9999;
+    }
+    /* 모달 내부 폼 */
+    .write-form-container.modal {
+        width: 90%;           /* 작은 화면에서 90% 폭 사용 */
+        max-width: 500px;     /* 큰 화면에서는 최대 500px */
+        margin: 0 auto;       /* 중앙 정렬 */
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        max-height: 90vh;     /* 화면 높이의 90%로 제한 */
+        overflow-y: auto;     /* 내용이 넘칠 경우 스크롤 생성 */
+    }
+    .write-form-container h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #002147;
+    }
+    .write-form-container label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .write-form-container input[type="text"],
+    .write-form-container textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    /* 내용 텍스트 영역 높이 증가 */
+    .write-form-container textarea {
+      height: 200px; /* 기존보다 높게 설정 */
+      resize: vertical; /* 세로 크기 조절 가능 */
+    }
+    .write-form-container .form-actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* 푸터 */
+    footer {
+      background-color: #002147;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+
+    #btnCancel {
+      color:black;
+      background-color: #ccc;;
+    }
+    #btnCancel:hover {
+      background-color: #999;
+    }
+    .ck p{
+      margin:0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="header-container">
+      <div class="logo">AIM STUDY</div>
+      <div class="nav-user-container">
+        <nav>
+          <ul>
+            <li><a href="index.html">홈</a></li>
+            <li><a href="notice.html" class="active">공지사항</a></li>
+            <li><a href="board.html">게시판</a></li>
+            <li><a href="#">수강신청</a></li>
+            <li><a href="#">문의</a></li>
+            <li id="auth-link"><a href="login.html">로그인</a></li>
+          </ul>
+        </nav>
+        <div class="hamburger-menu" id="hamburgerMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div id="user-info"></div>
+      </div>
+    </div>
+  </header>
+  <div id="modal-overlay" class="modal-overlay"></div>
+  <div id="user-edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" id="close-modal">&times;</span>
+      <h2>사용자 정보 수정</h2>
+      <form id="edit-user-form">
+        <label for="edit-userid">아이디</label>
+        <input type="text" id="edit-userid" name="userid" readonly />
+
+        <label for="edit-studentName">학생 이름</label>
+        <input type="text" id="edit-studentName" name="studentName" required />
+
+        <label for="edit-schoolName">학교 이름</label>
+        <input type="text" id="edit-schoolName" name="schoolName" />
+
+        <label for="edit-grade">학년</label>
+        <input type="text" id="edit-grade" name="grade" />
+
+        <label for="edit-parentPhone">보호자 연락처</label>
+        <input type="text" id="edit-parentPhone" name="parentPhone" required />
+
+        <label for="edit-studentPhone">학생 연락처</label>
+        <input type="text" id="edit-studentPhone" name="studentPhone" required />
+
+        <label for="edit-email">이메일</label>
+        <input type="email" id="edit-email" name="email" />
+
+        <div class="button-group">
+            <button type="submit" class="submit-button">정보 수정</button>
+            <button type="button" class="cancel-button" onclick="closeUserEditModal()">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- 공지 작성 모달 -->
+  <div class="overlay" id="overlay">
+    <div class="write-form-container modal" id="writeForm" style="display:none;">
+      <h3 id="formTitle">새 공지 작성</h3>
+      <label for="writeTitle">제목</label>
+      <input type="text" id="writeTitle" placeholder="제목을 입력하세요" />
+      
+      <label for="writeContent">내용</label>
+      <textarea id="writeContent" rows="10" placeholder="내용을 입력하세요"></textarea>
+      
+      <label for="writeImage" style="display: block; margin-bottom: 8px;">사진 첨부</label>
+      <input type="file" id="writeImage" accept="image/*" />
+      
+      <label for="writeFiles" style="display: block; margin: 10px 0 8px;">파일 첨부</label>
+      <input type="file" id="writeFiles" multiple />
+      
+      <div class="form-actions">
+        <button id="btnSubmitPost">작성 완료</button>
+        <button id="btnCancel">취소</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 메인 컨테이너 -->
+  <div class="container">
+    <h1>공지사항</h1>
+    <button id="btnWriteToggle" style="margin-bottom: 20px;">글 작성하기</button>
+    
+    <!-- 공지 목록 -->
+    <div class="notice-list" id="noticeList"></div>
+    
+    <!-- 페이지 이동 버튼 -->
+    <div class="pagination">
+      <button class="page-btn" data-page="1">1</button>
+      <button class="page-btn" data-page="2">2</button>
+      <button class="page-btn" data-page="3">3</button>
+      <button class="page-btn" data-page="4">4</button>
+      <button class="page-btn" data-page="5">5</button>
+      <button class="page-btn" data-page="6">6</button>
+      <button class="page-btn" data-page="7">7</button>
+      <button class="page-btn" data-page="8">8</button>
+      <button class="page-btn" data-page="9">9</button>
+      <button class="page-btn" data-page="10">10</button>
+    </div>
+  </div>
+  
+  <!-- 푸터 -->
+  <footer>
+    © 2025 AIM STUDY. All rights reserved.
+  </footer>
+  <script src="https://cdn.ckeditor.com/ckeditor5/35.0.1/classic/ckeditor.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ---- 로그인 상태 확인 및 사용자 정보 가져오기 ---- */
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('로그인을 하고 이용해주세요.');
+        window.location.href = 'login.html';
+        return;
+      }
+      ClassicEditor
+        .create(document.querySelector('#writeContent'))
+        .then(editor => {
+            // editor 인스턴스를 전역 변수에 저장하거나 필요 시 사용
+            window.editor = editor;
+        })
+        .catch(error => {
+            console.error('CKEditor 초기화 중 오류 발생:', error);
+        });
+
+      /* ---- 사용자 정보 가져오기 ---- */
+      let userName = 'Unknown';
+      const userInfoDiv = document.getElementById('user-info');
+
+      fetch('/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('사용자 정보 가져오기 실패');
+        return res.json();
+      })
+      .then(data => {
+        const user = data.user;
+        userName = user.studentName || 'Unknown';
+        if (userInfoDiv) {
+          userInfoDiv.textContent = `${user.studentName} (${user.schoolName}, ${user.grade})`;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+      });
+
+      /* ---- 전역 상태 ---- */
+      let allNotices = [];
+      let currentPage = 1;
+      const PER_PAGE = 10;
+      let editingNoticeId = null; // null: 새 글 모드, number: 수정 모드
+
+      /* ---- DOM 요소 ---- */
+      const overlay = document.getElementById('overlay');
+      const writeForm = document.getElementById('writeForm');
+      const formTitle = document.getElementById('formTitle');
+      const btnWriteToggle = document.getElementById('btnWriteToggle');
+      const btnSubmitPost = document.getElementById('btnSubmitPost');
+      const btnCancel = document.getElementById('btnCancel');
+      const writeTitle = document.getElementById('writeTitle');
+      const writeContent = document.getElementById('writeContent');
+      const writeImage = document.getElementById('writeImage');
+      const writeFiles = document.getElementById('writeFiles'); // 다중 파일 인풋
+      const noticeList = document.getElementById('noticeList');
+      const pageButtons = document.querySelectorAll('.page-btn');
+
+      /* ---- 모달 열기/닫기 ---- */
+      function openModal() {
+        overlay.style.display = 'flex';   // 반투명 배경
+        writeForm.style.display = 'block';
+      }
+      function closeModal() {
+        overlay.style.display = 'none';
+        writeForm.style.display = 'none';
+      }
+
+      /* ---- 새 글 작성 버튼 ---- */
+      btnWriteToggle.addEventListener('click', () => {
+        editingNoticeId = null; // 새 글
+        formTitle.textContent = '새 공지 작성'; 
+        writeTitle.value = '';
+        writeContent.value = '';
+        writeImage.value = '';
+        if (writeFiles) writeFiles.value = '';
+
+        openModal();
+      });
+
+      /* ---- 취소 버튼 ---- */
+      btnCancel.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal();
+      });
+
+      /* ---- 작성 완료(등록) ---- */
+      btnSubmitPost.addEventListener('click', (e) => {
+        e.preventDefault(); // 폼 제출 기본 동작 방지
+
+        const titleVal = writeTitle.value.trim();
+        const contentVal = window.editor.getData().trim();
+        const imageFile = writeImage.files[0];
+        const fileList = writeFiles ? writeFiles.files : [];
+
+        if (!titleVal || !contentVal) {
+          alert('제목과 내용을 모두 입력하세요!');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', titleVal);
+        formData.append('content', contentVal);
+        // 'author' 필드 제거
+
+        // 단일 이미지 첨부
+        if (imageFile) {
+          formData.append('image', imageFile);
+        }
+        // 여러 파일 첨부
+        for (let i = 0; i < fileList.length; i++) {
+          formData.append('files', fileList[i]);
+        }
+
+        // 1) 새 공지 등록
+        fetch('/api/notices', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        })
+        
+        .then(res => {
+          if(!res.ok) throw new Error('등록 실패');
+          return res.json();
+        })
+        .then(newNotice => {
+          closeModal();
+          loadNotices();
+        })
+        .catch(err => {
+          console.error(err);
+          alert('운영자만 공지를 등록할 수 있습니다.');
+        });
+        fetch(`/api/notices/${editingNoticeId}`, { 
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+        });
+        
+      });
+
+      /* ---- 목록 렌더링 ---- */
+      function renderNotices(page) {
+        noticeList.innerHTML = '';
+        const startIndex = (page - 1) * PER_PAGE;
+        const endIndex = page * PER_PAGE;
+        const pageNotices = allNotices.slice(startIndex, endIndex);
+
+        if (pageNotices.length === 0) {
+          noticeList.innerHTML = `<div style="text-align:center;margin-top:50px;font-size:16px;color:#555;">표시할 공지사항이 없습니다.</div>`;
+          return;
+        }
+
+        pageNotices.forEach(notice => {
+          const item = document.createElement('div');
+          item.className = 'notice-item';
+          item.innerHTML = `
+            <div class="notice-title">${notice.title}</div>
+            <div class="notice-meta">
+              ${notice.author} | ${notice.date}
+            </div>
+            <img src="./trash.png" alt="삭제" class="trash-icon" />
+            <img src="./edit.png" alt="수정" class="edit-icon" />
+          `;
+
+          // 상세보기
+          item.addEventListener('click', (e) => {
+            if (e.target.classList.contains('trash-icon') || e.target.classList.contains('edit-icon')) {
+              return; // 아이콘 누르면 상세보기 막음
+            }
+            window.location.href = `noticeDetail.html?id=${notice.id}`;
+          });
+          // 삭제 아이콘
+          const trashIcon = item.querySelector('.trash-icon');
+          trashIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('정말 삭제하시겠습니까?')) {
+              fetch(`/api/notices/${notice.id}`, { 
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              })
+                .then(res => {
+                  if(!res.ok) throw new Error('삭제 실패');
+                  loadNotices();
+                })
+                .catch(err => {
+                  console.error(err);
+                  alert('운영자만 공지를 삭제할 수 있습니다.');
+                });
+            }
+          });
+
+          // 수정 아이콘
+          const editIcon = item.querySelector('.edit-icon');
+          editIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal(notice);
+          });
+
+          noticeList.appendChild(item);
+        });
+      }
+
+      /* ---- 페이지 버튼 활성화 ---- */
+      function setActivePageButton(page) {
+        pageButtons.forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.querySelector(`.page-btn[data-page="${page}"]`);
+        if (targetBtn) {
+          targetBtn.classList.add('active');
+        }
+      }
+      pageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const page = parseInt(btn.getAttribute('data-page'), 10);
+          currentPage = page;
+          renderNotices(currentPage);
+          setActivePageButton(currentPage);
+        });
+      });
+
+      /* ---- 수정 모드: openEditModal ---- */
+      function openEditModal(notice) {
+        editingNoticeId = notice.id;
+        formTitle.textContent = '공지 수정'; // 수정 모드로 제목 변경
+        writeTitle.value = notice.title || '';
+        writeContent.value = notice.content || '';
+        writeImage.value = '';
+        if (writeFiles) writeFiles.value = '';
+
+        openModal();
+      }
+
+      /* ---- 공지 목록 불러오기 ---- */
+      function loadNotices() {
+        fetch('/api/notices', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+          .then(res => {
+            if (!res.ok) throw new Error('목록 요청 실패');
+            return res.json();
+          })
+          .then(data => {
+            allNotices = data;
+            currentPage = 1;
+            renderNotices(currentPage);
+            setActivePageButton(currentPage);
+          })
+          .catch(err => {
+            console.error(err);
+            noticeList.innerHTML = `<p style="color:red;">공지사항을 불러오는 중 오류가 발생했습니다.</p>`;
+          });
+      }
+
+      // 초기 로딩
+      loadNotices();
+    });
+  </script>
+  <script src="js/header.js"></script>
+</body>
+</html>
+

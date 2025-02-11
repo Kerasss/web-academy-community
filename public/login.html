@@ -1,0 +1,237 @@
+<!-- public/login.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>로그인</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /* --------------------------
+       기본 스타일 초기화
+    -------------------------- */
+    * {
+      box-sizing: border-box;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    body {
+      background-color: #f4f7fa;
+      color: #333;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 메인 컨테이너 (폼 가로 길이를 700px로) */
+    .container {
+      width: 90%;
+      max-width: 700px;
+      margin: 40px auto;
+      flex: 1;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #002147;
+      border-bottom: 2px solid #002147;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+
+    /* 로그인 폼 */
+    .login-form {
+      margin-top: 20px;
+    }
+    .login-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .login-form input[type="text"],
+    .login-form input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .login-form button {
+      width: 100%;
+      padding: 14px 0;
+      background-color: #002147;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    .login-form button:hover {
+      background-color: #003f8f;
+    }
+
+    /* 아이디/비번 찾기 + 회원가입 링크 */
+    .login-extra-links {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      color: #333;
+      font-size: 14px;
+    }
+    .login-extra-links span {
+      cursor: pointer;
+      color: #333;
+    }
+    .login-extra-links span:hover {
+      text-decoration: underline;
+    }
+    .input {
+      position: relative;
+    }
+
+    .input .eyes {
+      position: absolute;
+      top: 14px;
+      bottom: 0;
+      right: 10px;
+      margin: auto 2px;
+      height: 30px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* 푸터 */
+    footer {
+      background-color: #002147;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="header-container">
+      <div class="logo">AIM STUDY</div>
+      <div class="nav-user-container">
+        <nav>
+          <ul>
+            <li><a href="index.html">홈</a></li>
+            <li><a href="notice.html">공지사항</a></li>
+            <li><a href="board.html">게시판</a></li>
+            <li><a href="#">수강신청</a></li>
+            <li><a href="#">문의</a></li>
+            <li id="auth-link"><a href="login.html" class="active">로그인</a></li>
+          </ul>
+        </nav>
+        <div class="hamburger-menu" id="hamburgerMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div id="user-info"></div>
+      </div>
+    </div>
+</header>
+  <!-- 메인 컨테이너 -->
+  <div class="container">
+    <h1>로그인</h1>
+
+    <!-- 로그인 폼 -->
+    <form class="login-form">
+      <label for="userid">아이디</label>
+      <input type="text" id="userid" placeholder="아이디를 입력하세요" required />
+      <div class="input password">
+        <label for="userpw">비밀번호</label>
+        <input type="password" id="userpw" placeholder="비밀번호를 입력하세요" required />
+        <div class="eyes">
+          <i class="fa fa-eye-slash fa-lg"></i>
+        </div>
+      </div>
+      <!-- 로그인 버튼 -->
+      <button type="button" onclick="handleLogin()">로그인</button>
+    </form>
+
+    <!-- 아이디/비번 찾기 + 회원가입 링크 -->
+    <div class="login-extra-links">
+      <span onclick="location.href='find-password.html'">아이디/비밀번호 찾기</span>
+      <span>|</span>
+      <span onclick="location.href='register.html'">회원가입</span>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <footer>
+    © 2025 AIM STUDY. All rights reserved.
+  </footer>
+  <script src="http://code.jquery.com/jquery-latest.js"></script> 
+  <script>
+    $(function(){
+      // 눈표시 클릭 시 패스워드 보이기 토글
+      $('.eyes').on('click', function(){
+        // .input.password 컨테이너의 active 토글
+        $(this).closest('.input').toggleClass('active');
+
+        if( $(this).closest('.input').hasClass('active') ){
+          // active 상태이면 눈 아이콘 변경 및 비밀번호를 일반 텍스트로 변경
+          $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+          $(this).closest('.input').find('#userpw').attr('type', 'text');
+        } else {
+          // active 해제되면 원래대로 복원
+          $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+          $(this).closest('.input').find('#userpw').attr('type', 'password');
+        }
+      });
+    });
+    async function handleLogin() {
+      const userid = document.getElementById('userid').value.trim();
+      const userpw = document.getElementById('userpw').value.trim();
+
+      if (!userid || !userpw) {
+        alert('아이디와 비밀번호를 입력하세요.');
+        return;
+      }
+
+      try {
+        // POST /api/login
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userid, userPw: userpw }) // 백엔드 라우트에 맞춰 key 작성
+        });
+
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          // 로그인 실패
+          alert(result.error || '로그인 실패');
+          return;
+        }
+
+        // 로그인 성공 → 토큰 저장 및 메인 페이지로 이동
+        localStorage.setItem('token', result.token);
+        alert('로그인 성공!\n환영합니다.');
+        location.href = 'index.html';
+      } catch (err) {
+        console.error(err);
+        alert('서버와 통신 중 오류가 발생했습니다.');
+      }
+    }
+  </script>
+  <script src="js/header.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,304 @@
+/* public/css/header.css */
+
+/* 로고 스타일 */
+header {
+    background-color: #002147;
+    padding: 20px;
+    color: white;
+}
+
+/* 햄버거 메뉴 기본 스타일: 데스크탑에서는 숨김 */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 4px 0;
+    background: white;
+    transition: all 0.3s;
+}
+
+header .logo {
+    font-size: 24px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* 헤더 컨테이너: 플렉스 박스 설정 */
+.header-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 좌우 정렬 */
+    gap: 30px;
+}
+
+/* 네비게이션과 사용자 정보 컨테이너 */
+.nav-user-container {
+    display: flex;
+    align-items: center;
+    gap: 100px; /* 네비게이션과 사용자 정보 간 간격 */
+}
+
+/* 네비게이션 스타일 */
+nav ul {
+    list-style-type: none;
+    display: flex;
+    gap: 25px;
+    margin: 0; /* 기본 마진 제거 */
+    padding: 0; /* 기본 패딩 제거 */
+}
+
+nav li {
+    display: inline-block;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    /* 데스크탑 환경에서는 기본 수평 텍스트 */
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+nav a.active {
+    color: #ffeb3b; /* 노란색 */
+}
+
+/* 사용자 정보 스타일 */
+#user-info {
+    font-weight: bold;
+    white-space: nowrap; /* 줄바꿈 방지 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: rgba(255, 235, 59, 0.2); /* 연한 노란색 배경 */
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#user-info:hover {
+    background-color: rgba(255, 235, 59, 0.4); /* 호버 시 배경색 진하게 */
+}
+
+#user-info span {
+    margin-left: 0;
+    font-size: 14px;
+}
+
+#user-info:empty {
+    display: none;
+}
+
+/* 기본 모달 오버레이 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto; /* 내용이 화면 높이를 초과하면 스크롤 가능 */
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정색 */
+    display: none; /* 기본적으로 숨김 */
+    z-index: 999; /* 헤더보다 위에 표시 */
+    padding: 20px 0; /* 내부 여백: 위아래 20px */
+}
+
+/* 기본 모달 창 스타일 */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    display: none; /* 기본적으로 숨김 */
+    z-index: 1000; /* 오버레이보다 위에 표시 */
+}
+
+/* 기본 모달 내용 스타일 */
+.modal-content {
+    padding: 20px;
+    position: relative;
+}
+
+/* 닫기 버튼 스타일 */
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #002147;
+    text-align: center;
+}
+
+.modal-content form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-content form input[type="text"],
+.modal-content form input[type="email"] {
+    width: 95%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* 버튼 그룹 스타일링 */
+.button-group {
+    display: flex;
+    justify-content: flex-end; /* 버튼들을 오른쪽으로 정렬 */
+    gap: 10px; /* 버튼 간 간격 */
+    margin-top: 20px; /* 상단 여백 */
+}
+
+/* 버튼 스타일링 */
+.button-group button {
+    width: 48%;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+/* 정보 수정 버튼 (Submit) */
+.button-group .submit-button {
+    background-color: #002147;
+    color: #fff;
+}
+
+.button-group .submit-button:hover {
+    background-color: #003f8f;
+    transform: translateY(-2px);
+}
+
+.button-group .submit-button:active {
+    transform: translateY(0);
+}
+
+/* 취소 버튼 */
+.button-group .cancel-button {
+    background-color: #ccc;
+    color: #333;
+}
+
+.button-group .cancel-button:hover {
+    background-color: #999;
+    transform: translateY(-2px);
+}
+
+.button-group .cancel-button:active {
+    transform: translateY(0);
+}
+
+/* 햄버거 메뉴 기본 스타일: 데스크탑에서는 숨김 */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 4px 0;
+    background: white;
+    transition: all 0.3s;
+}
+
+/* 모바일 환경 (600px 이하) */
+@media (max-width: 600px) {
+    /* 헤더 컨테이너를 column 방향으로 배치 */
+    .header-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+    }
+    
+    /* 네비게이션 메뉴: 기본은 숨김, 세로 배열 */
+    nav ul {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        text-align: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    nav ul.active {
+        display: flex;
+    }
+    
+    /* 햄버거 메뉴 보이기 */
+    .hamburger-menu {
+        display: flex;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1100;
+    }
+    
+    /* 기본적으로 user-info 숨김 */
+    #user-info {
+        display: none;
+    }
+    
+    /* 헤더 컨테이너에 .show-user-info 클래스가 있으면 user-info 박스 표시 및 위치 조정 */
+    .header-container.show-user-info #user-info {
+        display: flex;
+        position: static; /* 문서 흐름 내에서 배치 */
+        margin-top: 10px;
+        justify-content: center;
+        width: 100%;
+        /* 필요에 따라 폰트 크기와 패딩 조정 */
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+    
+    /* 네비게이션 링크는 그대로 세로 배열 (writing-mode 없이 일반 텍스트) */
+    nav li {
+        width: 100%;
+    }
+    nav a {
+        padding: 0px 0;
+        /* 기본 수평 텍스트 유지 */
+        writing-mode: horizontal-tb;
+    }
+    
+    /* user-info 박스의 여백은 필요에 따라 추가 조정 가능 */
+}

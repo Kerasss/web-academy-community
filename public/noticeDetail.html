@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>공지 상세</title>
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /****************************************
+     *  기본 리셋 및 레이아웃
+     ****************************************/
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      background: #f4f7fa;
+      color: #333;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    /****************************************
+     *  메인 컨테이너 (공지 상세)
+     ****************************************/
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #002147;
+      border-bottom: 2px solid #002147;
+      padding-bottom: 10px;
+    }
+
+    .detail-meta {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    /* detail-content에서는 white-space를 지정하지 않음 (본문만 따로) */
+    .detail-content {
+      line-height: 1.6;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 200px;
+    }
+
+    /* 이미지: 가운데 정렬 + 하단 여백 */
+    #detailImage {
+      display: block;
+      margin: 0 auto 30px; 
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    /* 본문 텍스트에만 pre-line 적용 -> DB 줄바꿈이 표시됨 */
+    #detailText {
+      white-space: pre-line;
+    }
+
+    /* 첨부파일 박스 */
+    .attachments-box {
+      margin: 20px 0;
+      background: #fff;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .attachments-box h4 {
+      font-size: 16px;
+      color: #002147;
+      margin-bottom: 10px;
+    }
+
+    /* 첨부 파일 목록 */
+    .attachment-item {
+      display: block;
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+      color: #333;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .attachment-item:hover {
+      color: #0060ff; /* 호버 시 파란색 */
+    }
+
+    /* 뒤로가기 버튼 */
+    .back-btn {
+      background-color: #002147;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s;
+      margin-top: 10px; 
+    }
+    .back-btn:hover {
+      background-color: #003f8f;
+    }
+    figure.media {
+    margin: 1em auto;       /* 위아래 여백과 가운데 정렬 */
+    text-align: center;
+    max-width: 100%;
+  }
+
+  figure.media oembed {
+      display: block;
+      width: 100%;
+      max-width: 560px;         /* 최대 너비, 필요에 따라 조정 */
+      aspect-ratio: 16 / 9;      /* 16:9 비율 유지 */
+      border: none;
+    }
+
+    figure.media iframe {
+      display: block;
+      width: 100%;
+      max-width: 560px; /* 필요에 따라 조정 */
+      aspect-ratio: 16 / 9;
+      border: none;
+    }
+
+    /* 2. blockquote 스타일 (인용문) */
+    blockquote {
+      margin: 1em 0;                  /* 위아래 여백 */
+      padding: 0.5em 1em;             /* 내부 여백 */
+      border-left: 4px solid #ccc;    /* 왼쪽에 얇은 선 추가 */
+      background-color: #f9f9f9;      /* 연한 배경색 */
+      font-style: italic;             /* 이탤릭체 */
+      color: #555;
+    }
+
+    /* 필요시 blockquote 내부의 <p> 태그에 추가 스타일 적용 */
+    blockquote p {
+      margin: 0;
+    }
+    #contentText p{
+      margin:0;
+    }
+    figure.table {
+      display: block;            /* block으로 표시 */
+      margin: 1em 0;             /* 위아래에 적당한 여백 */
+    }
+    figure.table table {
+      width: 100%;               /* 가로 전체 사용 */
+      border-collapse: collapse; /* 테두리 겹침 방지 */
+    }
+    figure.table th,
+    figure.table td {
+      border: 1px solid #ccc;    /* 연한 회색 테두리 */
+      padding: 8px;              /* 내부 여백 */
+      text-align: center;        /* 가운데 정렬(필요 시) */
+    }
+
+    /****************************************
+     *  푸터
+     ****************************************/
+    footer {
+      background-color: #002147;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- 헤더 -->
+    <header>
+        <div class="header-container">
+          <div class="logo">AIM STUDY</div>
+          <div class="nav-user-container">
+            <nav>
+              <ul>
+                <li><a href="index.html">홈</a></li>
+                <li><a href="notice.html" class="active">공지사항</a></li>
+                <li><a href="board.html">게시판</a></li>
+                <li><a href="#">수강신청</a></li>
+                <li><a href="#">문의</a></li>
+                <li id="auth-link"><a href="login.html">로그인</a></li>
+              </ul>
+            </nav>
+            <div class="hamburger-menu" id="hamburgerMenu">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div id="user-info"></div>
+          </div>
+        </div>
+      </header>
+      <div id="modal-overlay" class="modal-overlay"></div>
+      <div id="user-edit-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" id="close-modal">&times;</span>
+          <h2>사용자 정보 수정</h2>
+          <form id="edit-user-form">
+            <label for="edit-userid">아이디</label>
+            <input type="text" id="edit-userid" name="userid" readonly />
+    
+            <label for="edit-studentName">학생 이름</label>
+            <input type="text" id="edit-studentName" name="studentName" required />
+    
+            <label for="edit-schoolName">학교 이름</label>
+            <input type="text" id="edit-schoolName" name="schoolName" />
+    
+            <label for="edit-grade">학년</label>
+            <input type="text" id="edit-grade" name="grade" />
+    
+            <label for="edit-parentPhone">보호자 연락처</label>
+            <input type="text" id="edit-parentPhone" name="parentPhone" required />
+    
+            <label for="edit-studentPhone">학생 연락처</label>
+            <input type="text" id="edit-studentPhone" name="studentPhone" required />
+    
+            <label for="edit-email">이메일</label>
+            <input type="email" id="edit-email" name="email" />
+    
+            <div class="button-group">
+              <button type="submit" class="submit-button">정보 수정</button>
+              <button type="button" class="cancel-button" onclick="closeUserEditModal()">취소</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+      <h1 id="detailTitle">공지 제목</h1>
+      <div class="detail-meta" id="detailMeta"></div>
+
+      <div class="detail-content" id="detailContent">
+        <!-- 이미지와 텍스트 사이에 불필요한 줄바꿈이 없도록 처리 -->
+        <img id="detailImage" /><div id="detailText"></div>
+      </div>
+
+      <!-- 첨부파일 박스 -->
+      <div class="attachments-box" id="attachmentsBox" style="display: none;">
+        <h3>첨부 파일</h3>
+        <div id="attachmentList"></div> 
+      </div>
+
+      <a class="back-btn" id="btnBack">뒤로가기</a>
+    </div>
+
+    <!-- 푸터 -->
+    <footer>
+      © 2025 AIM STUDY. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const noticeId = params.get('id');
+      if (!noticeId) {
+        alert('공지 ID가 없습니다.');
+        history.back();
+        return;
+      }
+
+      // 요소
+      const detailImage = document.getElementById('detailImage');
+      const detailTitle = document.getElementById('detailTitle');
+      const detailMeta = document.getElementById('detailMeta');
+      const detailText = document.getElementById('detailText');
+      const attachmentsBox = document.getElementById('attachmentsBox');
+      const attachmentList = document.getElementById('attachmentList');
+      const btnBack = document.getElementById('btnBack');
+
+      // 공지 상세 요청
+      fetch(`/api/notices/${noticeId}`)
+        .then(res => {
+          if (!res.ok) throw new Error('공지 조회 실패');
+          return res.json();
+        })
+        .then(notice => {
+          // 이미지
+          if (notice.imagePath) {
+            detailImage.src = notice.imagePath;
+            detailImage.style.display = 'block';
+          } else {
+            detailImage.style.display = 'none';
+          }
+
+          // 제목, 작성자, 내용
+          detailTitle.textContent = notice.title || '제목 없음';
+          detailMeta.textContent = `${notice.author} | ${notice.date}`;
+          if (notice.content) {
+            detailText.innerHTML = notice.content;
+            const mediaFigures = detailText.querySelectorAll('figure.media');
+            mediaFigures.forEach(figure => {
+              Array.from(figure.children).forEach(child => {
+                if (child.tagName.toLowerCase() === 'oembed') {
+                  const url = child.getAttribute('url');
+                  if (!url) return;
+                  let embedUrl = url;
+                  if (url.includes('watch?v=')) {
+                    embedUrl = url.replace('watch?v=', 'embed/');
+                  } else if (url.includes('youtu.be/')) {
+                    embedUrl = url.replace('youtu.be/', 'www.youtube.com/embed/');
+                  }
+                  
+                  // 새 div 요소 생성 및 가운데 정렬 스타일 추가
+                  const containerDiv = document.createElement('div');
+                  containerDiv.setAttribute('data-oembed-url', url);
+                  containerDiv.style.textAlign = 'center';  // 내부 요소 가운데 정렬
+                  
+                  // iframe 생성 및 가운데 정렬
+                  const iframe = document.createElement('iframe');
+                  iframe.src = embedUrl;
+                  iframe.width = '560';
+                  iframe.height = '315';
+                  iframe.frameBorder = '0';
+                  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                  iframe.allowFullscreen = true;
+                  iframe.style.display = 'block';         // block 요소로 만들어야 margin auto 적용됨
+                  iframe.style.margin = '0 auto';           // 좌우 자동 여백으로 가운데 정렬
+                  
+                  containerDiv.appendChild(iframe);
+                  figure.replaceChild(containerDiv, child);
+                }
+              });
+            });
+          } else {
+            detailText.innerHTML = '내용이 없습니다.';
+          }
+          
+          // 첨부파일 표시
+          let files = [];
+          try {
+            files = JSON.parse(notice.attachments || '[]');
+          } catch(e) {
+            files = [];
+          }
+          if (Array.isArray(files) && files.length > 0) {
+            attachmentsBox.style.display = 'block';
+            attachmentList.innerHTML = '';
+            files.forEach((filePath, idx) => {
+              const fileName = filePath.split('/').pop() || `첨부파일${idx+1}`;
+              const link = document.createElement('a');
+              link.href = filePath; 
+              link.textContent = fileName;
+              link.download = ''; 
+              link.className = 'attachment-item';
+              attachmentList.appendChild(link);
+            });
+          } else {
+            attachmentsBox.style.display = 'none';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('공지 정보를 불러오지 못했습니다.');
+          history.back();
+        });
+
+      // 뒤로가기
+      btnBack.addEventListener('click', (e) => {
+        e.preventDefault();
+        history.back();
+      });
+    });
+  </script>
+  <script src="js/header.js"></script>
+</body>
+</html>

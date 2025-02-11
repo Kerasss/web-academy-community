@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>게시판</title>
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /* 기본 레이아웃 및 스타일 (공지사항과 유사) */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f7fa;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #002147;
+      border-bottom: 2px solid #002147;
+      padding-bottom: 10px;
+    }
+    /* 상단 액션 영역 – 데스크탑에서는 한 줄, 모바일에서는 세 줄 */
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    /* 데스크탑용 좌측 영역: 글 작성하기와 필터 그룹을 한 줄에 배치 */
+    .top-actions .left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    /* 필터 그룹 – 버튼 기본 스타일 */
+    .filter-group {
+      position: relative;
+    }
+    .filter-toggle {
+      background-color: #34495e;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+    .filter-toggle:hover {
+      background-color: #2c3e50;
+    }
+    .filter-options {
+      display: none; /* 기본은 숨김 */
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #f39c12;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 100;
+      white-space: nowrap;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-option {
+      background-color: #fff;
+      color: #333;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: background-color 0.3s;
+    }
+    .filter-option:hover {
+      background-color: #e0e0e0;
+    }
+    .filter-close {
+      background-color: #ccc;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: background-color 0.3s;
+    }
+    .filter-close:hover {
+      background-color: #999;
+    }
+    /* 게시글 목록, 페이지네이션 등 기존 스타일 유지 */
+    .board-list {
+      min-height: 600px;
+      margin-bottom: 20px;
+    }
+    .board-item {
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .board-item:hover {
+      background-color: #f1f1f1;
+    }
+    .board-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .board-meta {
+      font-size: 12px;
+      color: #777;
+      margin-top: 5px;
+    }
+    .trash-icon,
+    .edit-icon {
+      position: absolute;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .trash-icon { right: 15px; }
+    .edit-icon { right: 45px; }
+    .trash-icon:hover,
+    .edit-icon:hover {
+      opacity: 0.7;
+    }
+    .pagination {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .pagination button {
+      margin: 0 5px;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+      padding: 0;
+      border: none;
+      background-color: #002147;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .pagination button:hover {
+      background-color: #003f8f;
+    }
+    .pagination button.active {
+      background-color: #ffeb3b;
+      color: #333;
+    }
+    /* 글 작성 모달 – 기존과 동일 */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .write-form-container.modal {
+      width: 90%;
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .write-form-container h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #002147;
+    }
+    .write-form-container label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .write-form-container input[type="text"],
+    .write-form-container textarea,
+    .write-form-container select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .write-form-container textarea {
+      height: 200px;
+      resize: vertical;
+    }
+    .write-form-container .form-actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    #btnSubmitPost {
+      background-color: #002147;
+      border: none;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    #btnSubmitPost:hover {
+      background-color: #003f8f;
+    }
+    #btnWriteToggle {
+      background-color: #002147;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    #btnWriteToggle:hover {
+      background-color: #003f8f;
+    }
+    #btnCancel {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+      color: black;
+      background-color: #ccc;
+    }
+    #btnCancel:hover {
+      background-color: #999;
+    }
+    .board-info-box {
+      display: inline-block;
+      margin-left: 10px;
+      padding: 2px 6px;
+      background-color: #c1faf7; /* 밝은 회색 배경 – 필요시 원하는 색으로 변경 */
+      color: #333;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .filter-toggle{
+      color:black;
+      background-color:#ccc;
+    }
+    .filter-toggle:hover {
+      background-color: #999;
+    }
+     .ck p{
+      margin:0;
+    }
+  
+    footer {
+      background-color: #002147;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    @media (min-width: 600px){
+      .filter-option {
+        width:100%;
+      }
+    }
+    
+    /* 반응형 디자인: 모바일 환경에서는 상단 액션 버튼들을 세로 배열 (총 3줄) */
+    @media (max-width: 600px) {
+      .top-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .top-actions .left {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      /* 필터 토글 버튼 전체 너비 사용 */
+      .filter-toggle {
+        width: 100%;
+      }
+      
+      .filter-options {
+        display: none; /* 기본은 숨김 */
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+      }
+      #btnWriteToggle{
+        width:30%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 (header.css 및 header.js 적용) -->
+  <header>
+    <div class="header-container">
+      <div class="logo">AIM STUDY</div>
+      <div class="nav-user-container">
+        <nav>
+          <ul>
+            <li><a href="index.html">홈</a></li>
+            <li><a href="notice.html">공지사항</a></li>
+            <li><a href="board.html" class="active">게시판</a></li>
+            <li><a href="#">수강신청</a></li>
+            <li><a href="#">문의</a></li>
+            <li id="auth-link"><a href="login.html">로그인</a></li>
+          </ul>
+        </nav>
+        <div class="hamburger-menu" id="hamburgerMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div id="user-info"></div>
+      </div>
+    </div>
+  </header>
+  <div id="modal-overlay" class="modal-overlay"></div>
+  <div id="user-edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" id="close-modal">&times;</span>
+      <h2>사용자 정보 수정</h2>
+      <form id="edit-user-form">
+        <label for="edit-userid">아이디</label>
+        <input type="text" id="edit-userid" name="userid" readonly />
+        <label for="edit-studentName">학생 이름</label>
+        <input type="text" id="edit-studentName" name="studentName" required />
+        <label for="edit-schoolName">학교 이름</label>
+        <input type="text" id="edit-schoolName" name="schoolName" />
+        <label for="edit-grade">학년</label>
+        <input type="text" id="edit-grade" name="grade" />
+        <label for="edit-parentPhone">보호자 연락처</label>
+        <input type="text" id="edit-parentPhone" name="parentPhone" required />
+        <label for="edit-studentPhone">학생 연락처</label>
+        <input type="text" id="edit-studentPhone" name="studentPhone" required />
+        <label for="edit-email">이메일</label>
+        <input type="email" id="edit-email" name="email" />
+        <div class="button-group">
+          <button type="submit" class="submit-button">정보 수정</button>
+          <button type="button" class="cancel-button" onclick="closeUserEditModal()">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 메인 컨테이너 -->
+  <div class="container">
+    <h1>게시판</h1>
+    <div class="top-actions">
+      <button id="btnWriteToggle">글 작성하기</button>
+      <div class="left">
+        <div class="filter-group">
+          <button id="toggleSchoolFilter" class="filter-toggle">학교별 분류 ▼</button>
+          <div id="schoolFilterOptions" class="filter-options">
+            <button class="filter-option" data-school="all">전체</button>
+            <button class="filter-option" data-school="세종과학예술영재학교">세종과학예술영재학교</button>
+            <button class="filter-option" data-school="충남과학고등학교">충남과학고등학교</button>
+            <button class="filter-option" data-school="충북과학고등학교">충북과학고등학교</button>
+            <button class="filter-option" data-school="기타">기타</button>
+            <button id="closeSchoolFilter" class="filter-close">닫기</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <button id="toggleCategoryFilter" class="filter-toggle">내용 분류 ▼</button>
+          <div id="categoryFilterOptions" class="filter-options">
+            <button class="filter-option" data-category="all">전체</button>
+            <button class="filter-option" data-category="합격수기">합격 수기</button>
+            <button class="filter-option" data-category="질문ㆍ답변">질문ㆍ답변</button>
+            <button class="filter-option" data-category="과제도움">과제 도움 요청</button>
+            <button class="filter-option" data-category="기타">기타</button>
+            <button id="closeCategoryFilter" class="filter-close">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="board-list" id="boardList"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+  
+  <!-- 글 작성 모달 (게시판) -->
+  <div class="overlay" id="overlay">
+    <div class="write-form-container modal" id="writeForm" style="display:none;">
+      <h3 id="formTitle">새 게시글 작성</h3>
+      <label for="writeTitle">제목</label>
+      <input type="text" id="writeTitle" placeholder="제목을 입력하세요" />
+      <label for="writeSchool">학교 선택</label>
+      <select id="writeSchool">
+        <option value="기타">기타</option>
+        <option value="세종과학예술영재학교">세종과학예술영재학교</option>
+        <option value="충남과학고등학교">충남과학고등학교</option>
+        <option value="충북과학고등학교">충북과학고등학교</option>
+      </select>
+  <!-- 새로 추가: 내용 분류 -->
+      <label for="writeCategory">내용 분류</label>
+      <select id="writeCategory">
+        <option value="기타">기타</option>
+        <option value="합격수기">합격 수기</option>
+        <option value="질문ㆍ답변">질문ㆍ답변</option>
+        <option value="과제도움">과제 도움 요청</option>
+      </select>
+      <label for="writeContent">내용</label>
+      <textarea id="writeContent" rows="10" placeholder="내용을 입력하세요"></textarea>
+      <label for="writeImages" style="display: block; margin-bottom: 8px;">사진 첨부 (여러 장 가능)</label>
+      <input type="file" id="writeImages" name="images" accept="image/*" multiple />
+      <label for="writeFiles" style="display: block; margin: 10px 0 8px;">파일 첨부 (여러 개 가능)</label>
+      <input type="file" id="writeFiles" name="files" multiple />
+      <label for="anonymousCheckbox" style="display: block; margin-top: 20px;">
+        <input type="checkbox" id="anonymousCheckbox" name="isAnonymous" />
+        익명으로 작성하기
+      </label>
+      <div class="form-actions">
+        <button id="btnSubmitPost">작성 완료</button>
+        <button id="btnCancel">취소</button>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    © 2025 AIM STUDY. All rights reserved.
+  </footer>
+  
+  <script src="js/header.js"></script>
+  <script src="js/board.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/35.0.1/classic/ckeditor.js"></script>
+  <script>
+    // 필터 토글 관련 스크립트
+    document.addEventListener('DOMContentLoaded', () => {
+      // 학교별 분류 필터
+      const toggleSchoolFilter = document.getElementById('toggleSchoolFilter');
+      const schoolFilterOptions = document.getElementById('schoolFilterOptions');
+      const closeSchoolFilter = document.getElementById('closeSchoolFilter');
+      const schoolOptionButtons = schoolFilterOptions.querySelectorAll('.filter-option');
+
+      toggleSchoolFilter.addEventListener('click', () => {
+        schoolFilterOptions.style.display = (schoolFilterOptions.style.display === 'flex') ? 'none' : 'flex';
+      });
+      closeSchoolFilter.addEventListener('click', () => {
+        schoolFilterOptions.style.display = 'none';
+      });
+      schoolOptionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentSchoolFilter = btn.getAttribute('data-school');
+          // btn.textContent 앞에 <br>을 추가하여 줄바꿈 삽입
+          toggleSchoolFilter.innerHTML = '학교별 분류:<br>' + btn.textContent + ' ▼';
+          schoolFilterOptions.style.display = 'none';
+          currentPage = 1;
+          fetchBoards();
+        });
+      });
+
+      // 글 분류 필터
+      const toggleCategoryFilter = document.getElementById('toggleCategoryFilter');
+      const categoryFilterOptions = document.getElementById('categoryFilterOptions');
+      const closeCategoryFilter = document.getElementById('closeCategoryFilter');
+      const categoryOptionButtons = categoryFilterOptions.querySelectorAll('.filter-option');
+
+      toggleCategoryFilter.addEventListener('click', () => {
+        categoryFilterOptions.style.display = (categoryFilterOptions.style.display === 'flex') ? 'none' : 'flex';
+      });
+      closeCategoryFilter.addEventListener('click', () => {
+        categoryFilterOptions.style.display = 'none';
+      });
+      categoryOptionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategoryFilter = btn.getAttribute('data-category');
+          toggleCategoryFilter.innerHTML = '내용 분류:<br>' + btn.textContent + ' ▼';
+          categoryFilterOptions.style.display = 'none';
+          currentPage = 1;
+          fetchBoards();
+        });
+      });
+    });
+  </script>
+</body>
+</html>

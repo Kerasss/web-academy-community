@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>게시글 상세보기</title>
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /* 기본 리셋 및 레이아웃 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f4f7fa;
+      color: #333;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    .wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #002147;
+      border-bottom: 2px solid #002147;
+      padding-bottom: 10px;
+    }
+    /* 메타 정보: 작성자, 작성일, 조회수를 한 줄에 파이프로 구분 */
+    .detail-meta {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .detail-meta span {
+      margin: 0 5px;
+    }
+    .detail-content {
+      position: relative;
+      line-height: 1.6;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 15px 0 20px;
+    }
+    /* 이미지 컨테이너: 본문 박스 안쪽 맨 위에 위치 */
+    .images-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .images-container img {
+      display: block;
+      margin: 0 auto 20px;
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    /* 첨부파일 박스 */
+    .attachments-box {
+      margin: 0;
+      background: #fff;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .attachments-box h4 {
+      font-size: 16px;
+      color: #002147;
+      margin-bottom: 10px;
+    }
+    .attachment-item {
+      display: block;
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+      color: #333;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .attachment-item:hover {
+      color: #0060ff;
+    }
+    /* 댓글 섹션 */
+    .comments-section {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .comments-section h2 {
+      margin-bottom: 15px;
+      font-size: 20px;
+      color: #002147;
+    }
+    .comment {
+      border-bottom: 1px solid #c8cbca;
+      padding: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .comment:hover {
+      background-color: rgba(0,0,0,0.05);
+    }
+    .comment:last-child {
+      border-bottom: none;
+    }
+    .comment-header {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    .comment-header span {
+      margin: 0 5px;
+    }
+    .comment-content {
+      font-size: 14px;
+      white-space: pre-line;
+    }
+    /* 답글 스타일 */
+    .reply {
+      background: #FBF8F8;
+      padding: 8px;
+      margin: 8px 0 8px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    /* 답글 입력창 */
+    .reply-input {
+      margin-top: 10px;
+      display: none;
+      width: 90%;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+    }
+    .reply-input textarea {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    .reply-input button {
+      margin-top: 5px;
+      background-color: #002147;
+      border: none;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .reply-input button:hover {
+      background-color: #003f8f;
+    }
+    /* 새 댓글 작성 영역 */
+    .new-comment-section {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .new-comment-section h2 {
+      font-size: 20px;
+      color: #002147;
+      margin-bottom: 10px;
+    }
+    .new-comment-section textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    .new-comment-section button {
+      margin-top: 5px;
+      background-color: #002147;
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .new-comment-section button:hover {
+      background-color: #003f8f;
+    }
+    /* 뒤로가기 버튼 */
+    .back-btn {
+      background-color: #002147;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .back-btn:hover {
+      background-color: #003f8f;
+    }
+    #contentText{
+        white-space: pre-line;
+    }
+      /* detail page용 info box 스타일 */
+    .info-box {
+      display: inline-block;
+      margin-left: 10px;
+      padding: 4px 8px;
+      font-size: 14px;
+      background-color: #c1faf7; /* 밝은 회색 배경 – 필요시 원하는 색으로 변경 */
+      color: #333;
+      border-radius: 4px;
+      vertical-align: middle;
+    }
+    #newComment{
+        width:97%;
+    }
+    /* 추천 컨테이너: 본문 텍스트 아래에 여백을 주고, 중앙 정렬 */
+  .recommendation-container {
+    margin-top: 50px;
+    text-align: center; /* 내부의 추천 박스를 중앙에 배치 */
+  }
+
+  /* 추천 박스: inline-block으로 가로크기만큼 중앙에 배치 */
+  .recommendation-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+  }
+
+  /* 추천 아이콘 */
+  .recommend-icon {
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+  }
+
+  /* 수직 구분선 */
+  .recommendation-divider {
+    width: 1px;
+    height: 36px;
+    background-color: #ddd;
+    margin: 0 10px;
+  }
+
+  /* 추천 수 텍스트 */
+  .recommendation-count {
+    font-size: 16px;
+    color: #333;
+  }
+ figure.media {
+    margin: 1em auto;       /* 위아래 여백과 가운데 정렬 */
+    text-align: center;
+    max-width: 100%;
+  }
+
+  figure.media oembed {
+    display: block;
+    width: 100%;
+    max-width: 560px;         /* 최대 너비, 필요에 따라 조정 */
+    aspect-ratio: 16 / 9;      /* 16:9 비율 유지 */
+    border: none;
+  }
+
+  figure.media iframe {
+    display: block;
+    width: 100%;
+    max-width: 560px; /* 필요에 따라 조정 */
+    aspect-ratio: 16 / 9;
+    border: none;
+  }
+
+  /* 2. blockquote 스타일 (인용문) */
+  blockquote {
+    margin: 1em 0;                  /* 위아래 여백 */
+    padding: 0.5em 1em;             /* 내부 여백 */
+    border-left: 4px solid #ccc;    /* 왼쪽에 얇은 선 추가 */
+    background-color: #f9f9f9;      /* 연한 배경색 */
+    font-style: italic;             /* 이탤릭체 */
+    color: #555;
+  }
+
+  /* 필요시 blockquote 내부의 <p> 태그에 추가 스타일 적용 */
+  blockquote p {
+    margin: 0;
+  }
+  #contentText p{
+    margin:0;
+  }
+  figure.table {
+      display: block;            /* block으로 표시 */
+      margin: 1em 0;             /* 위아래에 적당한 여백 */
+    }
+    figure.table table {
+      width: 100%;               /* 가로 전체 사용 */
+      border-collapse: collapse; /* 테두리 겹침 방지 */
+    }
+    figure.table th,
+    figure.table td {
+      border: 1px solid #ccc;    /* 연한 회색 테두리 */
+      padding: 8px;              /* 내부 여백 */
+      text-align: center;        /* 가운데 정렬(필요 시) */
+    }
+
+  /* 모바일에서 info box 크기를 조금 축소 (필요시) */
+  @media (max-width: 600px) {
+    .info-box {
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+  }
+    /* Footer 항상 하단에 */
+    footer {
+      background-color: #002147;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- 헤더 (공통 header.css, header.js 적용) -->
+    <header>
+      <div class="header-container">
+        <div class="logo">AIM STUDY</div>
+        <div class="nav-user-container">
+          <nav>
+            <ul>
+              <li><a href="index.html">홈</a></li>
+              <li><a href="notice.html">공지사항</a></li>
+              <li><a href="board.html" class="active">게시판</a></li>
+              <li><a href="#">수강신청</a></li>
+              <li><a href="#">문의</a></li>
+              <li id="auth-link"><a href="login.html">로그인</a></li>
+            </ul>
+          </nav>
+          <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div id="user-info"></div>
+        </div>
+      </div>
+    </header>
+    <div id="modal-overlay" class="modal-overlay"></div>
+    <div id="user-edit-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" id="close-modal">&times;</span>
+        <h2>사용자 정보 수정</h2>
+        <form id="edit-user-form">
+          <label for="edit-userid">아이디</label>
+          <input type="text" id="edit-userid" name="userid" readonly />
+          <label for="edit-studentName">학생 이름</label>
+          <input type="text" id="edit-studentName" name="studentName" required />
+          <label for="edit-schoolName">학교 이름</label>
+          <input type="text" id="edit-schoolName" name="schoolName" />
+          <label for="edit-grade">학년</label>
+          <input type="text" id="edit-grade" name="grade" />
+          <label for="edit-parentPhone">보호자 연락처</label>
+          <input type="text" id="edit-parentPhone" name="parentPhone" required />
+          <label for="edit-studentPhone">학생 연락처</label>
+          <input type="text" id="edit-studentPhone" name="studentPhone" required />
+          <label for="edit-email">이메일</label>
+          <input type="email" id="edit-email" name="email" />
+          <div class="button-group">
+            <button type="submit" class="submit-button">정보 수정</button>
+            <button type="button" class="cancel-button" onclick="closeUserEditModal()">취소</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+      <h1 id="boardTitle">
+      <span class="title-text">게시글 제목</span>
+      <span id="boardInfoBox" class="info-box"></span>
+      </h1>
+      <div class="detail-meta" id="detailMeta">
+       <span id="boardAuthor"></span> |<span id="boardDate"></span> | 조회수: <span id="boardViews"></span> | 추천: <span id="boardRecommends" style="color: blue;"></span>
+      </div>
+      <div class="detail-content" id="boardContent">
+        <!-- 이미지들은 본문 박스 안쪽 맨 위에 위치 -->
+        <div class="images-container" id="imageContainer"></div>
+        <div id="contentText"></div>
+        <div class="recommendation-container">
+          <div class="recommendation-box">
+            <img id="recommendIcon" src="recommend.png" alt="추천" class="recommend-icon">
+            <div class="recommendation-divider"></div>
+            <span id="recommendCount" class="recommendation-count">0</span>
+          </div>
+        </div>
+      </div>
+      <!-- 첨부파일 박스 -->
+      <div class="attachments-box" id="attachmentsBox" style="display:none;">
+        <h3>첨부 파일</h3>
+        <div id="attachmentList"></div>
+      </div>
+      <!-- 댓글 섹션 (댓글 목록) -->
+      <div class="comments-section" id="commentsSection">
+        <h3>댓글</h3>
+        <div id="commentsList"></div>
+      </div>
+      <!-- 새 댓글 작성 영역 -->
+      <div class="new-comment-section" id="newCommentSection">
+        <h3>
+          댓글 작성
+          <!-- 첨부 아이콘 컨트롤 (제목 옆에 inline-block으로 배치) -->
+          <span class="comment-attachment-controls" style="margin-left: 10px;">
+            <img src="photo.png" id="commentPhotoIcon" alt="사진 첨부" style="cursor:pointer; width:30px; height:30px; vertical-align:middle;">
+            <input type="file" id="commentPhotoInput" accept="image/*" style="display:none;">
+            <img src="file.png" id="commentFilesIcon" alt="파일 첨부" style="cursor:pointer; width:30px; height:30px; vertical-align:middle; margin-left:10px;">
+            <input type="file" id="commentFilesInput" multiple style="display:none;">
+          </span>
+        </h3>
+        <textarea id="newComment" rows="3" placeholder="댓글을 입력하세요" style="width:97%"></textarea>
+        <!-- 첨부된 파일명들이 표시될 영역 (각 파일명은 한 줄씩) -->
+        <div id="commentAttachmentFilenames" style="margin: 5px 0; font-size: 12px; color: #555;"></div>
+        <button id="submitComment">등록</button>
+      </div>
+      <button class="back-btn" id="backButton">뒤로가기</button>
+    </div>
+    <!-- 푸터 -->
+    <footer>
+      © 2025 AIM STUDY. All rights reserved.
+    </footer>
+  </div>
+  
+  <!-- 스크립트 파일 로드 -->
+  <script src="js/header.js"></script>
+  <script src="js/boardDetail.js"></script>
+</body>
+</html>
